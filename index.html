@@ -1,0 +1,221 @@
+<!-- <!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title> Demo</title>
+    <script type="module" src="https://dicedemoui.diceid.com/verification/js/DiceIdVerification.js"></script>
+    <style>
+      p {
+        border: solid 1px blue;
+        padding: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="qr-scanner">
+    </div>
+  </body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title> Demo1</title>
+    <script type="module" src="DiceIdVerification.js"></script>
+    <script>
+      const attributesNotToBeListed = {
+        nbf: false,
+        exp: false,
+        iss: false,
+        aud: false,
+        pres_req_conf_id: false,
+        acr: false,
+        sub: false,
+        iat: false
+      };
+      const getUserDataFromToken = (token) => {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        const userData = JSON.parse(jsonPayload);
+        //const filtered = _.omit(userData, attributesNotToBeListed);
+        return userData;
+      };
+      const filterOutNotToBeListedAttributes = (response) => {
+        var responseClone = {};
+        Object.keys(response).forEach((key, i) => {
+          responseClone[key] = response[key];
+        });
+        Object.keys(attributesNotToBeListed).forEach((key, i) => {
+          delete responseClone[key];
+        });
+        return responseClone;
+      };
+
+      const renderResponse = (response) => {
+        var responseHTML = '';
+        Object.keys(response).forEach((key, i) => {
+          var mainDiv = document.createElement('div');
+          mainDiv.id = 'mainDiv';
+          mainDiv.className = 'mainDynamicDiv';
+
+          var attributeNameDiv = document.createElement('div');
+          attributeNameDiv.id = 'attributeNameDiv';
+          attributeNameDiv.className = 'attributeNameDiv';
+          attributeNameDiv.innerHTML = key;
+          mainDiv.appendChild(attributeNameDiv);
+
+          var attributeValueDiv = document.createElement('div');
+          attributeValueDiv.id = 'attributeValueDiv';
+          attributeValueDiv.className = 'attributeValueDiv';
+          attributeValueDiv.innerHTML = response[key];
+          mainDiv.appendChild(attributeValueDiv);
+          document.getElementById('verificationResponse').appendChild(mainDiv);
+        });
+      };
+
+      function handleQR() {
+        var obj = {
+          'AUTH_BASE_URL': 'https://diceplatform-vcauth-uat.diceid.com/oidc',
+          'VCAUTH_CLIENT_ID': '<your-client-id>',
+          'WEBAPP_URL': 'http://localhost:3000/',
+          'VCAUTH_CONFIG_ID': '<your-config-id>'
+        }
+        window.WipVCAuth.getQR(obj);
+
+        const listener = (evt) => { 
+          console.log(JSON.stringify(evt.data));
+          switch (evt.data.type) {
+            case 'qrReceived': { 
+              document.getElementById('myIframe').src = evt.data.data;
+              break;
+            }
+            case 'onLoginTemplate': { 
+              document.getElementById('myIframe').style.visibility = 'hidden';
+              document.getElementById('scanInsctruction').style.visibility = 'hidden';
+              document.getElementById('myIframe').style.height = '0px';
+              document.getElementById('backButton').style.visibility = 'visible';
+              document.getElementById('successBoxContainer').style.visibility = 'visible';
+              var verificationResponse = getUserDataFromToken(evt.data.data.id_token);
+              var filteredResponse = filterOutNotToBeListedAttributes(verificationResponse);
+              //document.getElementById('verificationResponse').innerHTML = `Congratulations ${verificationResponse.Name}, you have successfully verified your credentials.`;
+              renderResponse(filteredResponse);
+              break;
+            }
+          }
+        }
+        window.addEventListener('message', listener);
+      };
+
+      function goBack() {
+        window.location.reload(); 
+      };
+    </script>
+    <style>
+      .verificationResponse {
+        display: flex;
+        text-align: center;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 50px;
+        font-family: Quicksand, Helvetica, sans-serif;
+      }
+      .qrCodeContainer {
+        text-align: center;
+      }
+      .scanInsctruction {
+        margin: 0px;
+        font-size: 1.125em;
+        font-weight: 600;
+        line-height: 1.25em;
+        color: rgb(22, 22, 63);
+        font-family: Quicksand, Helvetica, sans-serif;
+        text-align: center;
+        padding-top: 40px;
+        padding-bottom: 32px;
+      }
+      .mainDynamicDiv {
+        display: flex;
+        font-family: Quicksand, Helvetica, sans-serif;
+        box-shadow: 2px 2px #EFEFEF;
+        border-top: 1px solid #EFEFEF;
+        width: 500px;
+      }
+      .attributeNameDiv {
+        width: 40%;
+        text-align: left;
+        padding: 10px;
+        font-weight: 800;
+        border-right: solid #EFEFEF;
+        background: #EFEFEF;
+      }
+      .attributeValueDiv {
+        color: black;
+        width: 60%;
+        text-align: left;
+        padding: 10px;
+      }
+      .backButton {
+        width: 100px;
+        text-align: center;
+        padding: 10px;
+        font-family: Quicksand, Helvetica, sans-serif;
+      }
+      .successBox {
+        border-style: solid;
+        border-color: #81BD38;
+        background-color: #E7F1DA;
+        border-radius: 5px;
+        text-align: center;
+        padding: 10px;
+        font-family: Quicksand, Helvetica, sans-serif;
+        width: 500px;
+      }
+      .successBoxContainer {
+        text-align: center;
+        width: 100%;
+        visibility: hidden;
+        display: flex;
+        justify-content: center;
+      }
+      .backButtonContainer {
+        visibility: hidden;
+        text-align: center;
+        padding-top: 50px;
+      }
+    </style>
+  </head>
+  <body onload="handleQR()">  
+    <div class="main">
+      <div class="scanInsctruction" id="scanInsctruction">
+        Scan the below QR to test the verification template
+      </div>
+      <div class="qrCodeContainer">
+        <iframe 
+          id="myIframe"
+          className="responsive-iframe"
+          width="450px"
+          height="550px"
+          frameBorder="0"
+          scrolling="none"
+        ></iframe>
+      </div>
+      <div id="successBoxContainer" class="successBoxContainer">
+        <div id="successBox" class="successBox">
+          <b>Success: </b> Verification template successfully tested.
+        </div>
+      </div>
+      <div id="verificationResponse" class="verificationResponse"> 
+        
+      </div>
+      <div class="backButtonContainer" id='backButton'> 
+        <button class="backButton" onclick="goBack()">Back</button>
+      </div>
+    </div>  
+  </body>
+</html>
