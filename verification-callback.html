@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Processing verifiable credentials</title>
+	</head>
+
+	<body>
+		<noscript> You need to enable JavaScript to run this app. </noscript>
+		<h1>Verifying credentials....</h1>
+		<script src="https://dicedemoui.diceid.com/verification/js/oidc-client.min.js"></script>
+		<script>
+			console.log("im called one");
+			userManager = new Oidc.UserManager({
+				response_type: "code",
+				response_mode: "query",
+				loadUserInfo: false
+			});
+			const vcAuthUrl = sessionStorage.getItem("connectionlessVCAuthUrl")
+			if(vcAuthUrl) {
+				const issuer = `${vcAuthUrl}`
+				const token_endpoint = `${issuer}/vc/connect/token`
+				
+				this.userManager.settings.metadata = {
+					issuer: issuer,
+					token_endpoint: token_endpoint
+				};
+				userManager
+					.signinRedirectCallback()
+					.then(function (user) {
+						console.log("sucess");
+						window.parent.postMessage({
+							type: 'onLoginTemplate',
+							data: user,
+						});
+						window.close();
+					})
+					.catch(function (e) {
+						console.error(e);
+						window.parent.postMessage({ type: 'onLoginTemplateError' });
+						window.close();
+					});
+			} else {
+				console.log("VCAuthUrl: " + vcAuthUrl);
+			}
+			
+		</script>
+	</body>
+</html>
