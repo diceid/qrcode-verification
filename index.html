@@ -59,10 +59,11 @@
       };
 
       function handleQR() {
+        /** PLEASE CHANGE THESE VALUES AS PER YOUR SETUP **/
         var obj = {
-          'AUTH_BASE_URL': 'https://diceplatform-vcauth-uat.diceid.com/oidc',
+          'AUTH_BASE_URL': 'https://console-api-uat.diceid.com/v1/oidc',
           'VCAUTH_CLIENT_ID': '<your-client-id>',
-          'WEBAPP_URL': 'http://localhost:3000/',
+          'WEBAPP_URL': '<your-web-app-server-and-port>',
           'VCAUTH_CONFIG_ID': '<your-config-id>'
         }
         window.WipVCAuth.getQR(obj);
