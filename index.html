@@ -1,3 +1,24 @@
+<!-- <!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title> Demo</title>
+    <script type="module" src="https://dicedemoui.diceid.com/verification/js/DiceIdVerification.js"></script>
+    <style>
+      p {
+        border: solid 1px blue;
+        padding: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="qr-scanner">
+    </div>
+  </body>
+</html> -->
+
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -38,33 +59,35 @@
 
       const renderResponse = (response) => {
         var responseHTML = '';
-        Object.keys(response).forEach((key, i) => {
-          var mainDiv = document.createElement('div');
-          mainDiv.id = 'mainDiv';
-          mainDiv.className = 'mainDynamicDiv';
+        Object.keys(response.presented_values).forEach((outerKey, i) => {
+            Object.keys(response.presented_values[outerKey]).forEach((key, i) => {
+                var mainDiv = document.createElement('div');
+                mainDiv.id = 'mainDiv';
+                mainDiv.className = 'mainDynamicDiv';
 
-          var attributeNameDiv = document.createElement('div');
-          attributeNameDiv.id = 'attributeNameDiv';
-          attributeNameDiv.className = 'attributeNameDiv';
-          attributeNameDiv.innerHTML = key;
-          mainDiv.appendChild(attributeNameDiv);
+                var attributeNameDiv = document.createElement('div');
+                attributeNameDiv.id = 'attributeNameDiv';
+                attributeNameDiv.className = 'attributeNameDiv';
+                attributeNameDiv.innerHTML = key;
+                mainDiv.appendChild(attributeNameDiv);
 
-          var attributeValueDiv = document.createElement('div');
-          attributeValueDiv.id = 'attributeValueDiv';
-          attributeValueDiv.className = 'attributeValueDiv';
-          attributeValueDiv.innerHTML = response[key];
-          mainDiv.appendChild(attributeValueDiv);
-          document.getElementById('verificationResponse').appendChild(mainDiv);
+                var attributeValueDiv = document.createElement('div');
+                attributeValueDiv.id = 'attributeValueDiv';
+                attributeValueDiv.className = 'attributeValueDiv';
+                attributeValueDiv.innerHTML = response.presented_values[outerKey][key];
+                mainDiv.appendChild(attributeValueDiv);
+                document.getElementById('verificationResponse').appendChild(mainDiv);
+            });
         });
       };
 
       function handleQR() {
-        /** PLEASE CHANGE THESE VALUES AS PER YOUR SETUP **/
-        var obj = {
-          'AUTH_BASE_URL': 'https://console-api-uat.diceid.com/v1/oidc',
-          'VCAUTH_CLIENT_ID': '<your-client-id>',
-          'WEBAPP_URL': '<your-web-app-server-and-port>',
-          'VCAUTH_CONFIG_ID': '<your-config-id>'
+       var obj = {
+          'AUTH_BASE_URL': 'https://console-api-dev.diceid.com/v1/oidc',
+          'VCAUTH_CLIENT_ID': '1cefd7e9-3f11-4028-acf8-0a5d1a9fe7d0',
+          'WEBAPP_URL': 'http://localhost:3000/',
+          'VCAUTH_CONFIG_ID': '75559037-306c-4b08-b4d4-8ee03c3e9895',
+          'REDIRECT_URI': 'http://localhost:3000/verification-callback.html'
         }
         window.WipVCAuth.getQR(obj);
 
